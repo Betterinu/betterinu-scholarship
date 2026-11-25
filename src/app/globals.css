@@ -1,0 +1,308 @@
+@import "tailwindcss";
+
+/* Explicit rather than relying on automatic detection — the app lives one level
+   up from this file and the scan root would otherwise be `src/app`. */
+@source "../";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Self-hosted (ITF Free Font License, via Fontshare) — the wordmark sampler
+   blocks on Clash Display, so it must never depend on a third-party CDN. */
+@font-face {
+  font-family: 'Clash Display';
+  src: url('/fonts/clash-display-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Clash Display';
+  src: url('/fonts/clash-display-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme inline {
+  --font-display: "Clash Display", "Satoshi", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Satoshi", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-bg: var(--bg);
+  --color-bg-soft: var(--bg-soft);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-cta: var(--cta);
+  --color-cta-ink: var(--cta-ink);
+  --color-err: var(--err);
+  --color-mint: #25d366;
+  --color-teal: #128c7e;
+  --color-deep: #075e54;
+}
+
+/* ------------------------------- theme tokens ------------------------------ */
+
+:root {
+  --bg: #000000;
+  --bg-soft: #080808;
+  --card: #0d0d0d;
+  --ink: #ffffff;
+  --ink-soft: #a0a0a0;
+  --ink-faint: #707070;
+  --line: #1a1a1a;
+  --line-strong: #2a2a2a;
+  --accent: #25d366;
+  --cta: #25d366;
+  --cta-ink: #000000;
+  --err: #ff8d74;
+  --bg-a70: rgba(0, 0, 0, 0.72);
+  --wash-a: transparent;
+  --wash-b: transparent;
+  --dot: #25d366;
+  --sel: rgba(37, 211, 102, 0.26);
+  color-scheme: dark;
+}
+
+/* duplicated below for explicit dark class — kept in sync */
+.dark {
+  --bg: #000000;
+  --bg-soft: #080808;
+  --card: #0d0d0d;
+  --ink: #ffffff;
+  --ink-soft: #a0a0a0;
+  --ink-faint: #707070;
+  --line: #1a1a1a;
+  --line-strong: #2a2a2a;
+  --accent: #25d366;
+  --cta: #25d366;
+  --cta-ink: #000000;
+  --err: #ff8d74;
+  --bg-a70: rgba(0, 0, 0, 0.72);
+  --wash-a: transparent;
+  --wash-b: transparent;
+  --dot: #25d366;
+  --sel: rgba(37, 211, 102, 0.26);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --bg: #000000;
+    --bg-soft: #080808;
+    --card: #0d0d0d;
+    --ink: #ffffff;
+    --ink-soft: #a0a0a0;
+    --ink-faint: #707070;
+    --line: #1a1a1a;
+    --line-strong: #2a2a2a;
+    --accent: #25d366;
+    --cta: #25d366;
+    --cta-ink: #000000;
+    --err: #ff8d74;
+    --bg-a70: rgba(0, 0, 0, 0.72);
+    --wash-a: transparent;
+    --wash-b: transparent;
+    --dot: #25d366;
+    --sel: rgba(37, 211, 102, 0.26);
+    color-scheme: dark;
+  }
+}
+
+/* ---------------------------------- base ---------------------------------- */
+
+html {
+  scroll-padding-top: 4.5rem;
+}
+
+/* Native smooth scrolling is the fallback for when Lenis is not driving, not a
+   companion to it. Lenis 1.3 dropped the `.lenis-smooth { scroll-behavior: auto }`
+   rule earlier versions shipped, so leaving this unscoped puts the browser's own
+   scroll animator underneath Lenis' per-frame writes — the two fight on every
+   programmatic scroll, which is exactly what reads as laggy, rubber-band scroll.
+   `html.lenis` is present only while Lenis is actually running. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.lenis) {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background-color: var(--sel);
+}
+
+/* This rule is unlayered, so it outranks every Tailwind utility no matter the
+   specificity — `focus-visible:outline-none` in a component cannot override it.
+   Options inside the select are the one place that's wrong: Radix moves DOM
+   focus onto the highlighted row, which would draw an accent box around each
+   option as you arrow through the list. They carry their own indicator (an
+   accent background tint plus a check), so exclude them here rather than
+   fighting the cascade at the call site. */
+:focus-visible:not([data-slot='select-item']) {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+summary {
+  list-style: none;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+/* theme swap animates on structural surfaces; hover states keep their own faster transitions */
+.tfade {
+  transition:
+    background-color 0.4s ease,
+    border-color 0.4s ease,
+    color 0.4s ease;
+}
+
+.bar-in {
+  animation: bar-in 0.3s ease;
+}
+
+@keyframes bar-in {
+  from {
+    transform: translateY(-100%);
+  }
+}
+
+/* ------------------------------- micro-motion ------------------------------ */
+
+/* Native <details> cannot transition its own height, so the disclosure keeps
+   its semantics and the answer eases in on open instead. */
+.faq-answer {
+  animation: faq-in 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes faq-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+/* The one idle loop on the page. It is a fixed, always-visible affordance, so a
+   slow drift reads as presence rather than as an attention grab. */
+.float-idle {
+  animation: float-idle 4.5s ease-in-out infinite;
+}
+
+@keyframes float-idle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* Nav links draw their own underline from the leading edge on hover, rather
+   than switching a static border on. */
+.nav-link {
+  position: relative;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 1px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-link:hover::after,
+.nav-link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* --------------------------------- select ---------------------------------- */
+
+/* Enter only. Radix Select tears its content down the moment it closes and,
+   unlike Dialog or Popover, offers no exit-animation hook without forceMount —
+   so a matching `[data-state='closed']` rule leaves the panel stranded on
+   screen after a selection instead of animating it away. Verified: adding one
+   reproduces exactly that, by mouse and by keyboard.
+
+   The reduced-motion block below collapses this, so no separate opt-out. */
+@keyframes select-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.select-panel[data-state='open'] {
+  animation: select-panel-in 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ------------------------------ reduced motion ----------------------------- */
+
+/* One guarantee covering every CSS transition and keyframe on the page,
+   including any added later. The GSAP and Framer Motion work opts out through
+   its own matchMedia / useReducedMotion checks; this is the declarative half.
+   Durations collapse rather than dropping to `none` so transitionend still
+   fires and nothing waits forever on a callback that never comes. */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
